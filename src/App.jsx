@@ -246,9 +246,14 @@ function HotelDash(){
     setSaving(true);
     try{
       let gid=form.guest_id;
+      let guestEmail=null;
+      let guestName=form.gname||"";
       if(!gid&&form.gname){
         const{data:g,error:ge}=await sb.from("guests").insert({full_name:form.gname,phone:form.gphone||null,email:form.gemail||null}).select().single();
-        if(ge) throw ge; gid=g.id;
+        if(ge) throw ge; gid=g.id; guestEmail=form.gemail||null;
+      } else if(gid) {
+        const g=guests.find(g=>g.id===gid);
+        guestEmail=g?.email||null; guestName=g?.full_name||"";
       }
       if(!gid) throw new Error("Ingresa el nombre del huésped");
       const{error}=await sb.from("reservations").insert({
@@ -259,6 +264,26 @@ function HotelDash(){
         total_price:parseFloat(form.total_price)||null,notes:form.notes||null,source:form.source||"direct",
       });
       if(error) throw error;
+
+      // Send confirmation email if guest has email
+      if(guestEmail){
+        const room=rooms.find(r=>r.id===form.room_id);
+        sb.functions.invoke("send-reservation-email",{
+          body:{
+            guest_name:guestName,
+            guest_email:guestEmail,
+            room_number:room?.room_number||"?",
+            room_type:room?.room_types?.name||"",
+            check_in:form.check_in,
+            check_out:form.check_out,
+            check_in_time:fmtTime(form.check_in_time||"14:00"),
+            check_out_time:fmtTime(form.check_out_time||"12:00"),
+            total_price:form.total_price||null,
+            source:form.source||"direct",
+          }
+        });
+      }
+
       setRModal(false); setForm({}); search(); load();
     }catch(e){ alert(e.message); }
     setSaving(false);
