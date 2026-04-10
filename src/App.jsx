@@ -151,32 +151,9 @@ function LoginScreen({onLogin}){
   );
 }
 
-export default function App(){
+function HotelDash(){
   const today = new Date();
   const isMobile = useIsMobile();
-  const [session,setSession]=useState(null);
-  const [authLoading,setAuthLoading]=useState(true);
-
-  useEffect(()=>{
-    sb.auth.getSession().then(({data:{session}})=>{
-      setSession(session); setAuthLoading(false);
-    });
-    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>{
-      setSession(session);
-    });
-    return ()=>subscription.unsubscribe();
-  },[]);
-
-  if(authLoading) return(
-    <div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#0f172a",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
-      <div style={{textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:12}}>🏨</div>
-        <div style={{color:"#334155",fontSize:11,letterSpacing:3,textTransform:"uppercase"}}>Cargando</div>
-      </div>
-    </div>
-  );
-
-  if(!session) return <LoginScreen onLogin={()=>{}}/>;
   const [yr,setYr]=useState(today.getFullYear());
   const [mo,setMo]=useState(today.getMonth());
   const [tab,setTab]=useState("cal");
@@ -882,4 +859,31 @@ export default function App(){
     )}
     </>
   );
+}
+
+export default function App(){
+  const [session,setSession]=useState(null);
+  const [authLoading,setAuthLoading]=useState(true);
+
+  useEffect(()=>{
+    sb.auth.getSession().then(({data:{session}})=>{
+      setSession(session); setAuthLoading(false);
+    });
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>{
+      setSession(session);
+    });
+    return ()=>subscription.unsubscribe();
+  },[]);
+
+  if(authLoading) return(
+    <div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#0f172a",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🏨</div>
+        <div style={{color:"#334155",fontSize:11,letterSpacing:3,textTransform:"uppercase"}}>Cargando</div>
+      </div>
+    </div>
+  );
+
+  if(!session) return <LoginScreen onLogin={()=>{}}/>;
+  return <HotelDash/>;
 }
