@@ -47,9 +47,23 @@ function ReservationModal({selRoom,selDay,coDate,form,setForm,guests,saving,save
         {!form.guest_id&&<>
           <label style={{...lbl,marginTop:12}}>Nombre completo</label>
           <input placeholder="Ej: María García" value={form.gname||""} onChange={e=>setForm(f=>({...f,gname:e.target.value}))} style={{...inp}}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-            <div><label style={lbl}>Teléfono</label><input placeholder="+52..." value={form.gphone||""} onChange={e=>setForm(f=>({...f,gphone:e.target.value}))} style={{...inp}}/></div>
-            <div><label style={lbl}>Email</label><input type="email" value={form.gemail||""} onChange={e=>setForm(f=>({...f,gemail:e.target.value}))} style={{...inp}}/></div>
+          <div style={{marginTop:10}}>
+            <label style={lbl}>Teléfono</label>
+            <div style={{display:"flex",gap:6}}>
+              <select value={form.glada||"+52"} onChange={e=>setForm(f=>({...f,glada:e.target.value,gphone:(e.target.value+" "+(f.gphoneNum||"")).trim()}))}
+                style={{...inp,width:"auto",flexShrink:0,fontWeight:700,color:"#6366f1"}}>
+                {["+52 MX","+1 USA","+1 CA","+54 AR","+55 BR","+56 CL","+57 CO","+34 ES","+44 UK","+33 FR","+49 DE"].map(l=>{
+                  const code=l.split(" ")[0];
+                  return <option key={code} value={code}>{l}</option>;
+                })}
+              </select>
+              <input placeholder="33 1234 5678" value={form.gphoneNum||""} onChange={e=>setForm(f=>({...f,gphoneNum:e.target.value,gphone:((f.glada||"+52")+" "+e.target.value).trim()}))}
+                style={{...inp,flex:1}}/>
+            </div>
+          </div>
+          <div style={{marginTop:10}}>
+            <label style={lbl}>Email</label>
+            <input type="email" value={form.gemail||""} onChange={e=>setForm(f=>({...f,gemail:e.target.value}))} style={{...inp}}/>
           </div>
         </>}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>
