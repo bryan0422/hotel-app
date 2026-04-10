@@ -97,9 +97,86 @@ function ReservationModal({selRoom,selDay,coDate,form,setForm,guests,saving,save
   );
 }
 
+function LoginScreen({onLogin}){
+  const [email,setEmail]=useState("");
+  const [password,setPassword]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
+
+  async function handleLogin(e){
+    e.preventDefault();
+    setLoading(true); setError("");
+    const{error:err}=await sb.auth.signInWithPassword({email,password});
+    if(err) setError("Email o contraseña incorrectos");
+    else onLogin();
+    setLoading(false);
+  }
+
+  return(
+    <>
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0;}
+      html,body,#root{height:100%;width:100%;}
+      body{font-family:'Plus Jakarta Sans',sans-serif;}
+      #root{position:fixed;inset:0;}
+    `}</style>
+    <div style={{position:"fixed",inset:0,background:"#0f172a",display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <div style={{width:"100%",maxWidth:380}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:48,marginBottom:12}}>🏨</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:"-.5px"}}><span style={{color:"#38bdf8"}}>Hotel</span>Desk</div>
+          <div style={{fontSize:13,color:"#475569",marginTop:6}}>Panel de administración</div>
+        </div>
+        <form onSubmit={handleLogin} style={{background:"#1e293b",borderRadius:16,padding:"28px 24px",border:"1px solid #334155"}}>
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:11,fontWeight:700,color:"#64748b",display:"block",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Email</label>
+            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="admin@hotel.com" required
+              style={{width:"100%",padding:"11px 14px",background:"#0f172a",border:"1.5px solid #334155",borderRadius:9,color:"#e2e8f0",fontSize:14,fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          <div style={{marginBottom:20}}>
+            <label style={{fontSize:11,fontWeight:700,color:"#64748b",display:"block",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Contraseña</label>
+            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required
+              style={{width:"100%",padding:"11px 14px",background:"#0f172a",border:"1.5px solid #334155",borderRadius:9,color:"#e2e8f0",fontSize:14,fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          {error&&<div style={{background:"#ef444418",border:"1px solid #ef444433",borderRadius:8,padding:"10px 14px",color:"#f87171",fontSize:13,marginBottom:16}}>{error}</div>}
+          <button type="submit" disabled={loading}
+            style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif",opacity:loading?0.7:1}}>
+            {loading?"Iniciando sesión...":"Iniciar sesión"}
+          </button>
+        </form>
+      </div>
+    </div>
+    </>
+  );
+}
+
 export default function App(){
   const today = new Date();
   const isMobile = useIsMobile();
+  const [session,setSession]=useState(null);
+  const [authLoading,setAuthLoading]=useState(true);
+
+  useEffect(()=>{
+    sb.auth.getSession().then(({data:{session}})=>{
+      setSession(session); setAuthLoading(false);
+    });
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>{
+      setSession(session);
+    });
+    return ()=>subscription.unsubscribe();
+  },[]);
+
+  if(authLoading) return(
+    <div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#0f172a",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🏨</div>
+        <div style={{color:"#334155",fontSize:11,letterSpacing:3,textTransform:"uppercase"}}>Cargando</div>
+      </div>
+    </div>
+  );
+
+  if(!session) return <LoginScreen onLogin={()=>{}}/>;
   const [yr,setYr]=useState(today.getFullYear());
   const [mo,setMo]=useState(today.getMonth());
   const [tab,setTab]=useState("cal");
@@ -389,6 +466,10 @@ export default function App(){
             style={{width:36,height:36,borderRadius:9,border:"none",background:"#ef444418",color:"#f87171",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
             🔒
           </button>
+          <button onClick={()=>sb.auth.signOut()}
+            style={{width:36,height:36,borderRadius:9,border:"none",background:"#1e293b",color:"#475569",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            ⏻
+          </button>
         </div>
       </div>
 
@@ -619,9 +700,12 @@ export default function App(){
             </div>
           ))}
         </div>
-        <div style={{padding:"0 8px"}}>
+        <div style={{padding:"0 8px",display:"flex",flexDirection:"column",gap:6}}>
           <button onClick={()=>{setBlkModal(true);setBlkForm({});}} style={{width:"100%",padding:"9px",background:"#ef444418",color:"#f87171",border:"1px solid #ef444433",borderRadius:9,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
             🔒 Bloquear fechas
+          </button>
+          <button onClick={()=>sb.auth.signOut()} style={{width:"100%",padding:"9px",background:"transparent",color:"#334155",border:"1px solid #1e293b",borderRadius:9,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+            Cerrar sesión
           </button>
         </div>
       </div>
