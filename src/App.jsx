@@ -28,6 +28,61 @@ function useIsMobile(){
   return mob;
 }
 
+function ReservationModal({selRoom,selDay,coDate,form,setForm,guests,saving,saveRes,onClose,timeOpts,inp,lbl}){
+  return(
+    <div onClick={e=>e.target===e.currentTarget&&onClose()}
+      style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(6px)"}}>
+      <div style={{background:"#fff",borderRadius:18,padding:"22px",width:"100%",maxWidth:400,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.3)"}}>
+        <div style={{fontSize:16,fontWeight:800,color:"#0f172a",marginBottom:5}}>Nueva reservación</div>
+        <div style={{fontSize:11,color:"#64748b",marginBottom:14,padding:"9px 12px",background:"#f8fafc",borderRadius:8,lineHeight:1.7}}>
+          🛏 #{selRoom?.room_number} · {selRoom?.room_types?.name}<br/>
+          📅 {selDay} {fmtTime(form.check_in_time)} → {coDate} {fmtTime(form.check_out_time)}<br/>
+          💰 ${parseFloat(selRoom?.room_types?.base_price||0).toLocaleString("es-MX")}/noche
+        </div>
+        <label style={lbl}>Huésped existente</label>
+        <select value={form.guest_id||""} onChange={e=>setForm(f=>({...f,guest_id:e.target.value,gname:""}))} style={{...inp}}>
+          <option value="">Nuevo huésped...</option>
+          {guests.map(g=><option key={g.id} value={g.id}>{g.full_name}</option>)}
+        </select>
+        {!form.guest_id&&<>
+          <label style={{...lbl,marginTop:12}}>Nombre completo</label>
+          <input placeholder="Ej: María García" value={form.gname||""} onChange={e=>setForm(f=>({...f,gname:e.target.value}))} style={{...inp}}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
+            <div><label style={lbl}>Teléfono</label><input placeholder="+52..." value={form.gphone||""} onChange={e=>setForm(f=>({...f,gphone:e.target.value}))} style={{...inp}}/></div>
+            <div><label style={lbl}>Email</label><input type="email" value={form.gemail||""} onChange={e=>setForm(f=>({...f,gemail:e.target.value}))} style={{...inp}}/></div>
+          </div>
+        </>}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>
+          <div><label style={lbl}>Hora check-in</label>
+            <select value={form.check_in_time||"14:00"} onChange={e=>setForm(f=>({...f,check_in_time:e.target.value}))} style={{...inp}}>
+              {timeOpts.map(t=><option key={t} value={t}>{fmtTime(t)}</option>)}
+            </select>
+          </div>
+          <div><label style={lbl}>Hora check-out</label>
+            <select value={form.check_out_time||"12:00"} onChange={e=>setForm(f=>({...f,check_out_time:e.target.value}))} style={{...inp}}>
+              {timeOpts.map(t=><option key={t} value={t}>{fmtTime(t)}</option>)}
+            </select>
+          </div>
+          <div><label style={lbl}>Adultos</label><input type="number" min={1} value={form.adults||1} onChange={e=>setForm(f=>({...f,adults:e.target.value}))} style={{...inp}}/></div>
+          <div><label style={lbl}>Niños</label><input type="number" min={0} value={form.children||0} onChange={e=>setForm(f=>({...f,children:e.target.value}))} style={{...inp}}/></div>
+          <div><label style={lbl}>Precio total ($)</label><input type="number" value={form.total_price||""} onChange={e=>setForm(f=>({...f,total_price:e.target.value}))} style={{...inp}}/></div>
+          <div><label style={lbl}>Origen</label>
+            <select value={form.source||"direct"} onChange={e=>setForm(f=>({...f,source:e.target.value}))} style={{...inp}}>
+              <option value="direct">Directo</option><option value="booking">Booking</option><option value="airbnb">Airbnb</option><option value="expedia">Expedia</option><option value="other">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8,marginTop:18}}>
+          <button onClick={saveRes} disabled={saving} style={{flex:1,padding:"11px",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+            {saving?"Guardando...":"✓ Confirmar"}
+          </button>
+          <button onClick={onClose} style={{padding:"11px 16px",background:"#f1f5f9",color:"#475569",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Cancelar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){
   const today = new Date();
   const isMobile = useIsMobile();
@@ -290,58 +345,7 @@ export default function App(){
     </div>
   );
 
-  const ReservationModal = ()=>(
-    <div onClick={e=>e.target===e.currentTarget&&setRModal(false)}
-      style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(6px)"}}>
-      <div style={{background:"#fff",borderRadius:18,padding:"22px",width:"100%",maxWidth:400,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.3)"}}>
-        <div style={{fontSize:16,fontWeight:800,color:"#0f172a",marginBottom:5}}>Nueva reservación</div>
-        <div style={{fontSize:11,color:"#64748b",marginBottom:14,padding:"9px 12px",background:"#f8fafc",borderRadius:8,lineHeight:1.7}}>
-          🛏 #{selRoom?.room_number} · {selRoom?.room_types?.name}<br/>
-          📅 {selDay} {fmtTime(form.check_in_time)} → {coDate} {fmtTime(form.check_out_time)}<br/>
-          💰 ${parseFloat(selRoom?.room_types?.base_price||0).toLocaleString("es-MX")}/noche
-        </div>
-        <label style={lbl}>Huésped existente</label>
-        <select value={form.guest_id||""} onChange={e=>setForm(f=>({...f,guest_id:e.target.value,gname:""}))} style={{...inp}}>
-          <option value="">Nuevo huésped...</option>
-          {guests.map(g=><option key={g.id} value={g.id}>{g.full_name}</option>)}
-        </select>
-        {!form.guest_id&&<>
-          <label style={{...lbl,marginTop:12}}>Nombre completo</label>
-          <input placeholder="Ej: María García" value={form.gname||""} onChange={e=>setForm(f=>({...f,gname:e.target.value}))} style={{...inp}}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-            <div><label style={lbl}>Teléfono</label><input placeholder="+52..." value={form.gphone||""} onChange={e=>setForm(f=>({...f,gphone:e.target.value}))} style={{...inp}}/></div>
-            <div><label style={lbl}>Email</label><input type="email" value={form.gemail||""} onChange={e=>setForm(f=>({...f,gemail:e.target.value}))} style={{...inp}}/></div>
-          </div>
-        </>}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>
-          <div><label style={lbl}>Hora check-in</label>
-            <select value={form.check_in_time||"14:00"} onChange={e=>setForm(f=>({...f,check_in_time:e.target.value}))} style={{...inp}}>
-              {timeOpts.map(t=><option key={t} value={t}>{fmtTime(t)}</option>)}
-            </select>
-          </div>
-          <div><label style={lbl}>Hora check-out</label>
-            <select value={form.check_out_time||"12:00"} onChange={e=>setForm(f=>({...f,check_out_time:e.target.value}))} style={{...inp}}>
-              {timeOpts.map(t=><option key={t} value={t}>{fmtTime(t)}</option>)}
-            </select>
-          </div>
-          <div><label style={lbl}>Adultos</label><input type="number" min={1} value={form.adults||1} onChange={e=>setForm(f=>({...f,adults:e.target.value}))} style={{...inp}}/></div>
-          <div><label style={lbl}>Niños</label><input type="number" min={0} value={form.children||0} onChange={e=>setForm(f=>({...f,children:e.target.value}))} style={{...inp}}/></div>
-          <div><label style={lbl}>Precio total ($)</label><input type="number" value={form.total_price||""} onChange={e=>setForm(f=>({...f,total_price:e.target.value}))} style={{...inp}}/></div>
-          <div><label style={lbl}>Origen</label>
-            <select value={form.source||"direct"} onChange={e=>setForm(f=>({...f,source:e.target.value}))} style={{...inp}}>
-              <option value="direct">Directo</option><option value="booking">Booking</option><option value="airbnb">Airbnb</option><option value="expedia">Expedia</option><option value="other">Otro</option>
-            </select>
-          </div>
-        </div>
-        <div style={{display:"flex",gap:8,marginTop:18}}>
-          <button onClick={saveRes} disabled={saving} style={{flex:1,padding:"11px",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
-            {saving?"Guardando...":"✓ Confirmar"}
-          </button>
-          <button onClick={()=>setRModal(false)} style={{padding:"11px 16px",background:"#f1f5f9",color:"#475569",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Cancelar</button>
-        </div>
-      </div>
-    </div>
-  );
+
 
   // ── MOBILE LAYOUT
   if(isMobile) return(
@@ -499,7 +503,7 @@ export default function App(){
       )}
     </div>
 
-    {rModal&&selRoom&&<ReservationModal/>}
+    {rModal&&selRoom&&<ReservationModal selRoom={selRoom} selDay={selDay} coDate={coDate} form={form} setForm={setForm} guests={guests} saving={saving} saveRes={saveRes} onClose={()=>setRModal(false)} timeOpts={timeOpts} inp={inp} lbl={lbl}/>}
     {blkModal&&(
       <div onClick={e=>e.target===e.currentTarget&&setBlkModal(false)}
         style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}>
@@ -683,7 +687,7 @@ export default function App(){
       </div>
     </div>
 
-    {rModal&&selRoom&&<ReservationModal/>}
+    {rModal&&selRoom&&<ReservationModal selRoom={selRoom} selDay={selDay} coDate={coDate} form={form} setForm={setForm} guests={guests} saving={saving} saveRes={saveRes} onClose={()=>setRModal(false)} timeOpts={timeOpts} inp={inp} lbl={lbl}/>}
     {detModal&&(
       <div onClick={e=>e.target===e.currentTarget&&setDetModal(null)} style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(6px)"}}>
         <div style={{background:"#fff",borderRadius:18,padding:"24px",width:"100%",maxWidth:380,maxHeight:"88vh",overflowY:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.3)"}}>
