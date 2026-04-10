@@ -124,6 +124,7 @@ export default function App(){
   const [blkModal,setBlkModal]=useState(false);
   const [blkForm,setBlkForm]=useState({});
   const [mobileMenu,setMobileMenu]=useState(false);
+  const [roomsDate,setRoomsDate]=useState(ds(today));
 
   const load = useCallback(async()=>{
     setLoading(true);
@@ -455,23 +456,34 @@ export default function App(){
         )}
 
         {tab==="rooms"&&(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {rooms.map(room=>{
-              const c=clr(room.room_type_id);
-              const tr=reservations.find(r=>r.room_id===room.id&&r.check_in<=todayStr&&r.check_out>todayStr&&r.status!=="cancelled");
-              const occ=!!tr;
-              return(
-                <div key={room.id} style={{background:"#fff",borderRadius:12,padding:"12px",border:`1.5px solid ${c}22`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                    <div style={{fontSize:14,fontWeight:800}}>#{room.room_number}</div>
-                    <div style={{background:occ?"#fee2e2":"#dcfce7",color:occ?"#dc2626":"#16a34a",padding:"2px 7px",borderRadius:20,fontSize:9,fontWeight:700}}>{occ?"Ocup.":"Libre"}</div>
+          <div>
+            <div style={{background:"#fff",borderRadius:12,padding:"10px 14px",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <button onClick={()=>setRoomsDate(ds(addD(new Date(roomsDate+"T12:00:00"),-1)))} style={{width:30,height:30,borderRadius:8,border:"1px solid #e2e8f0",background:"transparent",cursor:"pointer",fontSize:14,color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center"}}>&#8249;</button>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:13,fontWeight:800,color:"#0f172a",textTransform:"capitalize"}}>{new Date(roomsDate+"T12:00:00").toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long"})}</div>
+                {roomsDate===todayStr&&<div style={{fontSize:10,color:"#6366f1",fontWeight:700,marginTop:2}}>HOY</div>}
+              </div>
+              <button onClick={()=>setRoomsDate(ds(addD(new Date(roomsDate+"T12:00:00"),1)))} style={{width:30,height:30,borderRadius:8,border:"1px solid #e2e8f0",background:"transparent",cursor:"pointer",fontSize:14,color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center"}}>&#8250;</button>
+            </div>
+            {roomsDate!==todayStr&&<button onClick={()=>setRoomsDate(todayStr)} style={{width:"100%",padding:"7px",background:"#6366f110",color:"#6366f1",border:"1px solid #6366f133",borderRadius:9,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"sans-serif",marginBottom:10}}>Volver a hoy</button>}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {rooms.map(room=>{
+                const c=clr(room.room_type_id);
+                const tr=reservations.find(r=>r.room_id===room.id&&r.check_in<=roomsDate&&r.check_out>roomsDate&&r.status!=="cancelled");
+                const occ=!!tr;
+                return(
+                  <div key={room.id} style={{background:"#fff",borderRadius:12,padding:"12px",border:`1.5px solid ${occ?c+"66":c+"22"}`}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                      <div style={{fontSize:14,fontWeight:800}}>#{room.room_number}</div>
+                      <div style={{background:occ?"#fee2e2":"#dcfce7",color:occ?"#dc2626":"#16a34a",padding:"2px 7px",borderRadius:20,fontSize:9,fontWeight:700}}>{occ?"Ocup.":"Libre"}</div>
+                    </div>
+                    <div style={{fontSize:10,color:"#64748b",marginBottom:6}}>{room.room_types?.name||"Sin tipo"}</div>
+                    <div style={{fontSize:14,fontWeight:800,color:c}}>${parseFloat(room.room_types?.base_price||0).toLocaleString("es-MX")}<span style={{fontSize:9,fontWeight:400,color:"#94a3b8"}}>/noche</span></div>
+                    {tr&&<div style={{fontSize:10,color:"#64748b",marginTop:6,padding:"4px 7px",background:"#f8fafc",borderRadius:6}}>&#128100; {tr.guests?.full_name?.split(" ")[0]}</div>}
                   </div>
-                  <div style={{fontSize:10,color:"#64748b",marginBottom:6}}>{room.room_types?.name||"Sin tipo"}</div>
-                  <div style={{fontSize:14,fontWeight:800,color:c}}>${parseFloat(room.room_types?.base_price||0).toLocaleString("es-MX")}<span style={{fontSize:9,fontWeight:400,color:"#94a3b8"}}>/noche</span></div>
-                  {tr&&<div style={{fontSize:10,color:"#64748b",marginTop:6,padding:"4px 7px",background:"#f8fafc",borderRadius:6}}>👤 {tr.guests?.full_name?.split(" ")[0]}</div>}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -690,9 +702,20 @@ export default function App(){
           </div>
         )}
 
-        {tab==="rooms"&&<div style={{flex:1,overflow:"auto",padding:12}}><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))",gap:10}}>
-          {rooms.map(room=>{const c=clr(room.room_type_id);const tr=reservations.find(r=>r.room_id===room.id&&r.check_in<=todayStr&&r.check_out>todayStr&&r.status!=="cancelled");const occ=!!tr;return(<div key={room.id} style={{background:"#fff",borderRadius:12,padding:"14px",border:`1.5px solid ${c}22`}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}><div><div style={{fontSize:15,fontWeight:800}}>#{room.room_number}</div><div style={{fontSize:10,color:"#64748b",marginTop:1}}>{room.room_types?.name||"Sin tipo"}</div></div><div style={{background:occ?"#fee2e2":"#dcfce7",color:occ?"#dc2626":"#16a34a",padding:"2px 8px",borderRadius:20,fontSize:9,fontWeight:700}}>{occ?"Ocup.":"Libre"}</div></div><div style={{fontSize:16,fontWeight:800,color:c}}>${parseFloat(room.room_types?.base_price||0).toLocaleString("es-MX")}<span style={{fontSize:10,fontWeight:400,color:"#94a3b8"}}>/noche</span></div>{tr&&<div style={{fontSize:10,color:"#64748b",padding:"5px 7px",background:"#f8fafc",borderRadius:6,marginTop:6}}>👤 {tr.guests?.full_name}</div>}</div>);})}
-        </div></div>}
+        {tab==="rooms"&&<div style={{flex:1,overflow:"auto",padding:12}}>
+          <div style={{background:"#fff",borderRadius:12,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <button onClick={()=>setRoomsDate(ds(addD(new Date(roomsDate+"T12:00:00"),-1)))} style={{width:28,height:28,borderRadius:7,border:"1px solid #e2e8f0",background:"transparent",cursor:"pointer",fontSize:13,color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center"}}>&#8249;</button>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{fontSize:14,fontWeight:800,color:"#0f172a",textTransform:"capitalize"}}>{new Date(roomsDate+"T12:00:00").toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</div>
+              {roomsDate===todayStr?<span style={{fontSize:10,color:"#6366f1",fontWeight:700,background:"#6366f110",padding:"2px 8px",borderRadius:20}}>HOY</span>:<button onClick={()=>setRoomsDate(todayStr)} style={{fontSize:11,color:"#6366f1",fontWeight:700,background:"#6366f110",border:"none",padding:"4px 10px",borderRadius:20,cursor:"pointer",fontFamily:"sans-serif"}}>Ir a hoy</button>}
+              <input type="date" value={roomsDate} onChange={e=>setRoomsDate(e.target.value)} style={{padding:"4px 8px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,color:"#475569",outline:"none",fontFamily:"sans-serif"}}/>
+            </div>
+            <button onClick={()=>setRoomsDate(ds(addD(new Date(roomsDate+"T12:00:00"),1)))} style={{width:28,height:28,borderRadius:7,border:"1px solid #e2e8f0",background:"transparent",cursor:"pointer",fontSize:13,color:"#64748b",display:"flex",alignItems:"center",justifyContent:"center"}}>&#8250;</button>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))",gap:10}}>
+          {rooms.map(room=>{const c=clr(room.room_type_id);const tr=reservations.find(r=>r.room_id===room.id&&r.check_in<=roomsDate&&r.check_out>roomsDate&&r.status!=="cancelled");const occ=!!tr;return(<div key={room.id} style={{background:"#fff",borderRadius:12,padding:"14px",border:`1.5px solid ${occ?c+"66":c+"22"}`}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}><div><div style={{fontSize:15,fontWeight:800}}>#{room.room_number}</div><div style={{fontSize:10,color:"#64748b",marginTop:1}}>{room.room_types?.name||"Sin tipo"}</div></div><div style={{background:occ?"#fee2e2":"#dcfce7",color:occ?"#dc2626":"#16a34a",padding:"2px 8px",borderRadius:20,fontSize:9,fontWeight:700}}>{occ?"Ocup.":"Libre"}</div></div><div style={{fontSize:16,fontWeight:800,color:c}}>${parseFloat(room.room_types?.base_price||0).toLocaleString("es-MX")}<span style={{fontSize:10,fontWeight:400,color:"#94a3b8"}}>/noche</span></div>{tr&&<div style={{fontSize:10,color:"#64748b",padding:"5px 7px",background:"#f8fafc",borderRadius:6,marginTop:6}}>&#128100; {tr.guests?.full_name}</div>}</div>);})}
+          </div>
+        </div>}
 
         {tab==="res"&&<div style={{flex:1,overflow:"auto",padding:12}}><div style={{display:"flex",flexDirection:"column",gap:8}}>
           {activeRes.length===0&&<div style={{textAlign:"center",padding:50,color:"#94a3b8"}}><div style={{fontSize:32,marginBottom:10}}>📋</div>Sin reservaciones activas</div>}
