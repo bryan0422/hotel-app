@@ -268,8 +268,15 @@ function HotelDash(){
       // Send confirmation email if guest has email
       if(guestEmail){
         const room=rooms.find(r=>r.id===form.room_id);
-        sb.functions.invoke("send-reservation-email",{
-          body:{
+        const {data:{session}}=await sb.auth.getSession();
+        fetch(`${SUPABASE_URL}/functions/v1/send-reservation-email`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${session?.access_token}`,
+            "apikey":SUPABASE_ANON_KEY,
+          },
+          body:JSON.stringify({
             guest_name:guestName,
             guest_email:guestEmail,
             room_number:room?.room_number||"?",
@@ -280,7 +287,7 @@ function HotelDash(){
             check_out_time:fmtTime(form.check_out_time||"12:00"),
             total_price:form.total_price||null,
             source:form.source||"direct",
-          }
+          })
         });
       }
 
