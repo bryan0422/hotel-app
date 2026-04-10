@@ -531,6 +531,31 @@ export default function App(){
     </div>
 
     {rModal&&selRoom&&<ReservationModal selRoom={selRoom} selDay={selDay} coDate={coDate} form={form} setForm={setForm} guests={guests} saving={saving} saveRes={saveRes} onClose={()=>setRModal(false)} timeOpts={timeOpts} inp={inp} lbl={lbl}/>}
+    {detModal&&(
+      <div onClick={e=>e.target===e.currentTarget&&setDetModal(null)}
+        style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,backdropFilter:"blur(6px)"}}>
+        <div style={{background:"#fff",borderRadius:18,padding:"24px",width:"100%",maxWidth:400,maxHeight:"88vh",overflowY:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.3)"}}>
+          <div style={{fontSize:16,fontWeight:800,marginBottom:10,textAlign:"center"}}>Detalle de reservación</div>
+          <div style={{textAlign:"center",marginBottom:14}}>
+            <span style={{display:"inline-block",padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:detModal.status==="confirmed"?"#6366f115":"#10b98115",color:detModal.status==="confirmed"?"#6366f1":"#10b981"}}>
+              {detModal.status==="confirmed"?"Confirmada":"En hotel"}
+            </span>
+          </div>
+          {[["Huésped",detModal.guests?.full_name],["Teléfono",detModal.guests?.phone],["Hab.",`#${detModal.rooms?.room_number}`],["Check-in",detModal.check_in+(detModal.check_in_datetime?" · "+new Date(detModal.check_in_datetime).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}):"")],["Check-out",detModal.check_out+(detModal.check_out_datetime?" · "+new Date(detModal.check_out_datetime).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}):"")],["Total",detModal.total_price?`$${parseFloat(detModal.total_price).toLocaleString("es-MX")}`:"—"]].filter(([,v])=>v).map(([k,v])=>(
+            <div key={k} style={{display:"flex",gap:10,padding:"9px 0",borderBottom:"1px solid #f8fafc"}}>
+              <span style={{fontSize:11,color:"#94a3b8",minWidth:80,flexShrink:0}}>{k}</span>
+              <span style={{fontSize:13,color:"#0f172a",fontWeight:600}}>{v}</span>
+            </div>
+          ))}
+          <div style={{display:"flex",gap:8,marginTop:20,flexWrap:"wrap"}}>
+            {detModal.status==="confirmed"&&<button onClick={()=>doCI(detModal.id)} style={{flex:1,padding:"10px",background:"#dcfce7",color:"#16a34a",border:"none",borderRadius:9,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Check-in</button>}
+            {detModal.status==="checked_in"&&<button onClick={()=>doCO(detModal.id)} style={{flex:1,padding:"10px",background:"#f1f5f9",color:"#475569",border:"none",borderRadius:9,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Check-out</button>}
+            <button onClick={()=>cancelRes(detModal.id)} style={{flex:1,padding:"10px",background:"#fee2e2",color:"#dc2626",border:"none",borderRadius:9,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Cancelar</button>
+            <button onClick={()=>setDetModal(null)} style={{padding:"10px 14px",background:"#f1f5f9",color:"#475569",border:"none",borderRadius:9,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Cerrar</button>
+          </div>
+        </div>
+      </div>
+    )}
     {blkModal&&(
       <div onClick={e=>e.target===e.currentTarget&&setBlkModal(false)}
         style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}>
@@ -727,10 +752,14 @@ export default function App(){
 
     {rModal&&selRoom&&<ReservationModal selRoom={selRoom} selDay={selDay} coDate={coDate} form={form} setForm={setForm} guests={guests} saving={saving} saveRes={saveRes} onClose={()=>setRModal(false)} timeOpts={timeOpts} inp={inp} lbl={lbl}/>}
     {detModal&&(
-      <div onClick={e=>e.target===e.currentTarget&&setDetModal(null)} style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(6px)"}}>
-        <div style={{background:"#fff",borderRadius:18,padding:"28px 28px 24px",width:"100%",maxWidth:400,maxHeight:"88vh",overflowY:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.3)",margin:"auto"}}>
-          <div style={{fontSize:16,fontWeight:800,marginBottom:12}}>Reservación</div>
-          <span style={{display:"inline-block",padding:"3px 10px",borderRadius:20,fontSize:10,fontWeight:700,background:detModal.status==="confirmed"?"#6366f115":"#10b98115",color:detModal.status==="confirmed"?"#6366f1":"#10b981",marginBottom:14}}>{detModal.status==="confirmed"?"Confirmada":"En hotel"}</span>
+      <div onClick={e=>e.target===e.currentTarget&&setDetModal(null)} style={{position:"fixed",inset:0,background:"rgba(15,23,42,.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,backdropFilter:"blur(6px)"}}>
+        <div style={{background:"#fff",borderRadius:18,padding:"28px",width:"100%",maxWidth:400,maxHeight:"88vh",overflowY:"auto",boxShadow:"0 32px 80px rgba(0,0,0,.3)"}}>
+          <div style={{fontSize:16,fontWeight:800,marginBottom:10,textAlign:"center"}}>Detalle de reservación</div>
+          <div style={{textAlign:"center",marginBottom:14}}>
+            <span style={{display:"inline-block",padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:detModal.status==="confirmed"?"#6366f115":"#10b98115",color:detModal.status==="confirmed"?"#6366f1":"#10b981"}}>
+              {detModal.status==="confirmed"?"Confirmada":"En hotel"}
+            </span>
+          </div>
           {[["Huésped",detModal.guests?.full_name],["Teléfono",detModal.guests?.phone],["Hab.",`#${detModal.rooms?.room_number}`],["Check-in",detModal.check_in+(detModal.check_in_datetime?" · "+new Date(detModal.check_in_datetime).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}):"")],["Check-out",detModal.check_out+(detModal.check_out_datetime?" · "+new Date(detModal.check_out_datetime).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}):"")],["Total",detModal.total_price?`$${parseFloat(detModal.total_price).toLocaleString("es-MX")}`:"—"]].filter(([,v])=>v).map(([k,v])=>(
             <div key={k} style={{display:"flex",gap:10,padding:"7px 0",borderBottom:"1px solid #f8fafc"}}><span style={{fontSize:10,color:"#94a3b8",minWidth:70}}>{k}</span><span style={{fontSize:12,color:"#0f172a",fontWeight:600}}>{v}</span></div>
           ))}
